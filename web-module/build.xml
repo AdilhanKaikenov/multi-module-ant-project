@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="multi-module" basedir="../" default="ear">
+
+    <property name="web-module" value="./web-module"/>
+
+    <property name="dist" value="./dist" />
+    <property name="conf" value="./conf"/>
+    <property name="build" value="./build"/>
+    <property name="lib" value="./lib"/>
+    <property name="web" value="./web"/>
+
+    <property name="version" value="1.0-SNAPSHOT"/>
+
+    <path id="build.classpath">
+        <fileset dir="${lib}" includes="**/*.jar" />
+    </path>
+
+    <target name="init" depends="clean">
+        <tstamp />
+        <mkdir dir="${build}" />
+        <mkdir dir="${dist}" />
+        <mkdir dir="${web}" />
+    </target>
+
+    <target name="compile" depends="init">
+        <javac srcdir="${web-module}/src" destdir="${build}">
+            <classpath refid="build.classpath"/>
+        </javac>
+    </target>
+
+    <target name="war" depends="compile">
+        <war basedir="web-module" destfile="${dist}/${web-module}-${version}.war" webxml="${conf}/web.xml">
+            <lib dir="${lib}"/>
+            <classes dir="${build}"/>
+            <zipfileset dir="${web}"  />
+        </war>
+    </target>
+
+    <target name="ear" depends="war">
+        <ear destfile="${dist}/${ant.project.name}-${version}.ear" appxml="${conf}/application.xml">
+            <fileset dir="${dist}" includes="*.war" />
+        </ear>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+
+</project>
