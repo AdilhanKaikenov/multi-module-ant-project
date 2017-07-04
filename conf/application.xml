@@ -5,6 +5,9 @@
 <application>
     <display-name>ear-module</display-name>
     <module>
+        <ejb>ejb-module-1.0-SNAPSHOT.jar</ejb>
+    </module>
+    <module>
         <web>
             <web-uri>web-module-1.0-SNAPSHOT.war</web-uri>
             <context-root>/web</context-root>
