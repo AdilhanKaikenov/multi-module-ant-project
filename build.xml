@@ -1,50 +1,140 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="multi-module" basedir="." default="ear">
+<project name="multi-module" basedir="." default="build">
 
+    <available property="jbossdir" value="C:\wildfly-10.1.0.Final\modules\system\layers\base"
+               file="C:\wildfly-10.1.0.Final\modules\system\layers\base" type="dir" />
+
+    <!-- ########### Properties declaretion ######################################################################   -->
     <property name="web-module" value="./web-module"/>
+    <property name="ejb-module" value="./ejb-module"/>
 
-    <property name="dist" value="./dist" />
     <property name="conf" value="./conf"/>
-    <property name="build" value="./build"/>
+    <property name="builddir" value="./builddir"/>
     <property name="lib" value="./lib"/>
+    <property name="outputartifacts" value="out-result" />
+
+    <property name="web.name" value="web-module"/>
+    <property name="web.projectpath" value="web-module"/>
+    <property name="web.src" value="${web.projectpath}/src" />
+    <property name="web.builddir" value="${builddir}/web" />
+    <property name="web.builddir.classes" value="${web.builddir}/WEB-INF/classes"/>
     <property name="web" value="./web"/>
 
+    <property name="ejb.name" value="ejb-module" />
+    <property name="ejb.projectpath" value="ejb-module"/>
+    <property name="ejb.src" value="${ejb.projectpath}/src"/>
+    <property name="ejb.builddir" value="${builddir}/ejb" />
+    <property name="ejb.builddir.classes" value="${ejb.builddir}/classes" />
+
+    <property name="ear.name" value="ProjectApplication" />
     <property name="version" value="1.0-SNAPSHOT"/>
 
     <path id="build.classpath">
         <fileset dir="${lib}" includes="**/*.jar" />
     </path>
 
-    <target name="init" depends="clean">
-        <tstamp />
-        <mkdir dir="${build}" />
-        <mkdir dir="${dist}" />
-        <mkdir dir="${web-module}/${web}" />
+    <!-- ########### Main Targets ################################################################################   -->
+    <target name="build" depends="create-ear">
     </target>
 
-    <target name="compile" depends="init">
-        <javac srcdir="${web-module}/src" destdir="${build}">
+    <target name="clean-build">
+        <antcall target="clean" />
+        <antcall target="build" />
+    </target>
+
+    <target name="clean">
+        <delete dir="${builddir}"/>
+        <delete dir="${outputartifacts}"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="${builddir}" />
+        <mkdir dir="${outputartifacts}"/>
+    </target>
+
+    <!-- ########### EJB App ####################################################################################    -->
+    <target name="init-ejb" depends="init">
+        <mkdir dir="${ejb.builddir}" />
+        <copy includeemptydirs="false"
+              todir="${ejb.builddir.classes}">
+            <fileset dir="${ejb.src}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="build-ejb" depends="init-ejb">
+        <mkdir dir="${ejb.builddir.classes}"/>
+        <javac destdir="${ejb.builddir.classes}"
+               includeantruntime="false">
+            <src path="${ejb.src}"/>
+            <classpath>
+                <fileset dir="${jbossdir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${outputartifacts}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
             <classpath refid="build.classpath"/>
         </javac>
     </target>
 
-    <target name="war" depends="compile">
-        <war basedir="web-module" destfile="${dist}/${web-module}-${version}.war" webxml="${conf}/web.xml">
+    <!-- ########### WEB ########################################################################################    -->
+    <target name="init-web" depends="init">
+        <mkdir dir="${web.builddir.classes}"/>
+        <copy includeemptydirs="false" todir="${web.builddir}">
+            <fileset dir="${web.projectpath}/web">
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="${web.builddir.classes}">
+            <fileset dir="${web.src}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target depends="init-web" name="build-web">
+        <javac destdir="${web.builddir.classes}"
+               includeantruntime="false">
+            <src path="${web.src}"/>
+            <classpath>
+                <fileset dir="${jbossdir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${outputartifacts}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+            <classpath refid="build.classpath"/>
+        </javac>
+    </target>
+
+    <!-- ############ CREATE ARCHIVES############################################################################### -->
+    <target name="create-web" depends="build-web">
+        <war destfile="${outputartifacts}/${web.name}-${version}.war"
+             basedir="${web.builddir}"
+             webxml="${web.projectpath}/web/WEB-INF/web.xml">
             <lib dir="${lib}"/>
-            <classes dir="${build}"/>
-            <zipfileset dir="web-module/web"  />
+            <lib dir="${outputartifacts}" includes="*.jar"/>
         </war>
     </target>
 
-    <target name="ear" depends="war">
-        <ear destfile="${dist}/${ant.project.name}-${version}.ear" appxml="${conf}/application.xml">
-            <fileset dir="${dist}" includes="*.war" />
-        </ear>
+    <target name="create-ejb" depends="build-ejb">
+        <jar destfile="${outputartifacts}/${ejb.name}-${version}.jar"
+             basedir="${ejb.builddir.classes}"
+             includes="**/*">
+            <fileset dir="${ejb-module}/">
+                <include name="META-INF/persistence.xml" />
+            </fileset>
+        </jar>
     </target>
 
-    <target name="clean">
-        <delete dir="${build}"/>
-        <delete dir="${dist}"/>
+    <target name="create-ear" depends="create-ejb,create-web">
+        <ear destfile="${outputartifacts}/${ear.name}.ear"
+             appxml="${conf}/application.xml">
+            <fileset dir="${outputartifacts}" includes="*.jar,*.war"/>
+        </ear>
     </target>
 
 </project>
