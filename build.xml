@@ -4,7 +4,7 @@
     <available property="jbossdir" value="C:\wildfly-10.1.0.Final\modules\system\layers\base"
                file="C:\wildfly-10.1.0.Final\modules\system\layers\base" type="dir" />
 
-    <!-- ########### Properties declaretion ######################################################################   -->
+    <!-- ########### Properties declaration ######################################################################   -->
     <property name="web-module" value="./web-module"/>
     <property name="ejb-module" value="./ejb-module"/>
 
