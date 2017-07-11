@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="multi-module" basedir="." default="build">
+<project name="multi-module" basedir="." default="build"
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
+>
 
     <available property="jbossdir" value="C:\wildfly-10.1.0.Final\modules\system\layers\base"
-               file="C:\wildfly-10.1.0.Final\modules\system\layers\base" type="dir" />
+               file="C:\wildfly-10.1.0.Final\modules\system\layers\base" type="dir"/>
 
     <!-- ########### Properties declaration ######################################################################   -->
     <property name="web-module" value="./web-module"/>
@@ -11,35 +15,39 @@
     <property name="conf" value="./conf"/>
     <property name="builddir" value="./builddir"/>
     <property name="lib" value="./lib"/>
-    <property name="outputartifacts" value="out-result" />
+    <property name="outputartifacts" value="out-result"/>
 
     <property name="web.name" value="web-module"/>
     <property name="web.projectpath" value="web-module"/>
-    <property name="web.src" value="${web.projectpath}/src" />
-    <property name="web.builddir" value="${builddir}/web" />
+    <property name="web.src" value="${web.projectpath}/src"/>
+    <property name="web.builddir" value="${builddir}/web"/>
     <property name="web.builddir.classes" value="${web.builddir}/WEB-INF/classes"/>
     <property name="web" value="./web"/>
 
-    <property name="ejb.name" value="ejb-module" />
+    <property name="ejb.name" value="ejb-module"/>
     <property name="ejb.projectpath" value="ejb-module"/>
     <property name="ejb.src" value="${ejb.projectpath}/src"/>
-    <property name="ejb.builddir" value="${builddir}/ejb" />
-    <property name="ejb.builddir.classes" value="${ejb.builddir}/classes" />
+    <property name="ejb.builddir" value="${builddir}/ejb"/>
+    <property name="ejb.builddir.classes" value="${ejb.builddir}/classes"/>
 
-    <property name="ear.name" value="ProjectApplication" />
+    <property name="ear.name" value="ProjectApplication"/>
     <property name="version" value="1.0-SNAPSHOT"/>
 
     <path id="build.classpath">
-        <fileset dir="${lib}" includes="**/*.jar" />
+        <fileset dir="${lib}" includes="**/*.jar"/>
     </path>
 
     <!-- ########### Main Targets ################################################################################   -->
-    <target name="build" depends="create-ear">
+    <target name="build" depends="resolve,create-ear">
+    </target>
+
+    <target name="resolve">
+        <ivy:retrieve/>
     </target>
 
     <target name="clean-build">
-        <antcall target="clean" />
-        <antcall target="build" />
+        <antcall target="clean"/>
+        <antcall target="build"/>
     </target>
 
     <target name="clean">
@@ -48,13 +56,13 @@
     </target>
 
     <target name="init">
-        <mkdir dir="${builddir}" />
+        <mkdir dir="${builddir}"/>
         <mkdir dir="${outputartifacts}"/>
     </target>
 
     <!-- ########### EJB App ####################################################################################    -->
     <target name="init-ejb" depends="init">
-        <mkdir dir="${ejb.builddir}" />
+        <mkdir dir="${ejb.builddir}"/>
         <copy includeemptydirs="false"
               todir="${ejb.builddir.classes}">
             <fileset dir="${ejb.src}">
@@ -125,7 +133,7 @@
              basedir="${ejb.builddir.classes}"
              includes="**/*">
             <fileset dir="${ejb-module}/">
-                <include name="META-INF/persistence.xml" />
+                <include name="META-INF/persistence.xml"/>
             </fileset>
         </jar>
     </target>
