@@ -53,11 +53,13 @@
     <target name="clean">
         <delete dir="${builddir}"/>
         <delete dir="${outputartifacts}"/>
+        <delete dir="${lib}"/>
     </target>
 
     <target name="init">
         <mkdir dir="${builddir}"/>
         <mkdir dir="${outputartifacts}"/>
+        <mkdir dir="${lib}"/>
     </target>
 
     <!-- ########### EJB App ####################################################################################    -->
